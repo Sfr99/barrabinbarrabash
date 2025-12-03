@@ -1,22 +1,48 @@
 # barrabinbarrabash
+
+## Descripción del reto
+
+Hemos propuesto un acercamiento para proteger servidores de videojuegos con
+protocolos inseguros enfocado a administradores de sistemas de servidores de
+juegos autogestionados. Las imágenes para los servidores de videojuegos suelen
+ser propietarias y dificultan la seguridad a nivel de aplicación. Por lo tanto,
+existen muchos servidores con imagenes servidores de videojuegos con protocolos
+inseguros y vulnerables a ataques DDoS, floods de conexiones, escaneos de
+puertos, payloads sospechosos, etc.
+
+Para solucionarlo hemos implementado una capa intermedia a nivel L4 que sirve
+de cortafuegos dedicado a servidores de videojuegos. Para comprobar la
+correcta ejecución de esta idea hemos implementado un MVP que protege a un
+servidor de [Project Zomboid preexistente que autogestionamos en nuestro tiempo
+libre, basado en NixOS](gitlab.com/albfsg/nixkiwi). El MVP implementa la capa
+protegiendo de ataques DDoS, baneando @IPs malignas. Además expone via HTTP un
+panel de administración del sistema que permite ver que ataques DDoS han
+sucedido, que @IPs han sido baneadas en consecuencia y permite desbanear.
+
 ## Ejecución interfaz web
+
 ### Recomendado
-```
+
+```bash
 cd ui/
 python3 -m venv venv
 pip3 install -r requirements.txt
 ```
 Dentro de `ui/backend/`
-```
+
+```bash
 uvicorn main:app --reload --port 5000
 ```
 Dentro de `ui/frontend/`
-```
+
+```bash
 python3 app.py
 ```
 ### Alternativamente usar script
+
 Dentro de `ui/`
-```
+
+```bash
 chmod +x run.sh
 ./run.sh
 ```
