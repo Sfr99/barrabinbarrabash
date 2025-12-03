@@ -31,6 +31,24 @@ el cual realiza un saneamiento de las entradas, banea @IPs si es necesario,
 comunica la existencia de ataques a la aplicación web implementada en Flask y
 FastAPI si es necesario y forwardea los paquetes al Docker si pasan el control.
 
+API del backend:
+
+
+- GET /state Devuelve un objeto con: attacks_today (nº ataques), banned_ips
+(lista de IPs baneadas), events (lista de eventos), chart (labels/values para
+gráfico)
+
+- POST /reset Borra todos los bans y eventos
+
+- POST /ban?ip=...&reason=... Añade una IP a la colección de baneadas
+
+- POST /unban/{ip} Elimina la IP de la tabla de IPs baneadas
+
+- GET /event?ip=...&action=...&description=...&is_attack=true|false Registra un
+evento
+
+- GET /chart Devuelve los datos necesarios para construir gráfico
+
 ## Cómo ejecutar o probar
 
 ### Ejecución proxy
