@@ -24,7 +24,9 @@ app.add_middleware(
 # Crear tablas al arrancar
 Base.metadata.create_all(bind=engine)
 init_sample_data()
-
+add_ban("123123123", "Initial ban for testing")
+add_ban("111222333", "Another initial ban")
+add_ban("444555666", "Yet another ban")
 # ------------------------------------------------------
 # RUTAS PÚBLICAS PARA EL FRONTEND FLASK
 # ------------------------------------------------------

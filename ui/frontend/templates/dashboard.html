@@ -19,30 +19,35 @@
 
     <div class="card">
         <h2>IPs baneadas</h2>
+
         {% if banned_ips %}
-        <table>
-            <thead>
-                <tr>
-                    <th>IP</th>
-                    <th>Motivo</th>
-                    <th>Baneado desde</th>
-                </tr>
-            </thead>
-            <tbody id="banned-table-body">
-            {% for ban in banned_ips %}
-                <tr>
-                    <td>{{ ban.ip }}</td>
-                    <td>{{ ban.reason }}</td>
-                    <td>{{ ban.since }}</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        <div class="banned-table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>IP</th>
+                        <th>Motivo</th>
+                        <th>Baneado desde</th>
+                    </tr>
+                </thead>
+                <tbody id="banned-table-body">
+                {% for ban in banned_ips %}
+                    <tr>
+                        <td>{{ ban.ip }}</td>
+                        <td>{{ ban.reason }}</td>
+                        <td>{{ ban.since }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
             <p>No hay IPs baneadas.</p>
         {% endif %}
+
         <a href="{{ url_for('bans') }}" class="btn">Ver y gestionar bans</a>
     </div>
+
 </section>
 
 <section class="card">

@@ -130,3 +130,31 @@ table tbody tr:nth-child(odd) {
     height: 250px;         /* controla el alto */
     margin: 0 auto;        /* centra el gráfico */
 }
+
+
+.banned-table-wrapper {
+    max-height: 120px;
+    overflow-y: auto;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.banned-table-wrapper table {
+    border-collapse: collapse;
+    border-top: none;            /* quita borde superior */
+    margin-top: 0;
+}
+
+.banned-table-wrapper thead {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.banned-table-wrapper thead th {
+    position: sticky;
+    top: 0;
+    background: #111827;
+    z-index: 3;
+    border-top: none !important; /* evita borde fantasma */
+}
