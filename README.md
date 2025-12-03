@@ -19,7 +19,7 @@ protegiendo de ataques DDoS, baneando @IPs malignas. Además expone via HTTP un
 panel de administración del sistema que permite ver que ataques DDoS han
 sucedido, que @IPs han sido baneadas en consecuencia y permite desbanear.
 
-## Enfoque de la solución
+## Enfoque de la solución / Cómo funciona
 
 Un servidor autogestionado de videojuegos puede estar montado de diversas
 maneras. En nuestro caso nuestro servidor tenía abierto en un router los puertos
@@ -31,13 +31,23 @@ el cual realiza un saneamiento de las entradas, banea @IPs si es necesario,
 comunica la existencia de ataques a la aplicación web implementada en Flask y
 FastAPI si es necesario y forwardea los paquetes al Docker si pasan el control.
 
-## Cómo funciona
-
 ## Cómo ejecutar o probar
 
-## Ejecución interfaz web
+### Ejecución proxy
 
-### Recomendado
+Para ejecutar el proxy, en el servidor a defender, en el directorio
+`/<WORK_DIR>/barrabinbarrabash/proxy/`:
+
+```bash
+nix-shell
+python3 ./proxy.py &
+```
+
+Abrir UI desde el navegador `http://<IP_DEL_SERVIDOR>:8001/`:
+
+### Ejecución interfaz web
+
+#### Recomendado
 
 ```bash
 cd ui/
@@ -54,7 +64,8 @@ Dentro de `ui/frontend/`
 ```bash
 python3 app.py
 ```
-### Alternativamente usar script
+
+#### Alternativamente usar script
 
 Dentro de `ui/`
 
