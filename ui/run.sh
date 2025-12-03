@@ -5,7 +5,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 cd backend/
-uvicorn main:app --reload --port 8001 &
+uvicorn main:app --reload --port 5000 &
 BACK_PID=$!
 
 cd ../frontend/

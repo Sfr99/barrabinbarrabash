@@ -169,7 +169,7 @@ function updateEvents(list) {
 // -------------------- FETCH COMPLETO DEL ESTADO --------------------
 
 function fetchState() {
-    fetch("http://127.0.0.1:8001/state")
+    fetch("http://127.0.0.1:5000/state")
         .then(resp => resp.json())
         .then(data => {
 

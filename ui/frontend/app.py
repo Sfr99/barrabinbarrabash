@@ -7,7 +7,7 @@ app = Flask(__name__)
 # ---------------------------
 # URL del backend FastAPI
 # ---------------------------
-API_BASE_URL = "http://localhost:8001"
+API_BASE_URL = "http://localhost:5000"
 
 
 # ---------------------------
@@ -121,5 +121,5 @@ def reset():
 
 
 if __name__ == "__main__":
-    # Frontend Flask en http://localhost:5000
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # Frontend Flask en http://localhost:8001
+    app.run(host="0.0.0.0", port=8001, debug=True)
