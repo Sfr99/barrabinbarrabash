@@ -1,0 +1,12 @@
+Objetivos:
+
+- Mostrar que el juego funciona bien sin mucha latencia
+- Primero hacemos todo con DDoS y luego expandimos una vez probemos todo
+
+Setup:
+
+- Todo en LAN
+- Un PC con virtualbox con el NixOS
+- Un PC que puede jugar al juego
+- Un PC del sysadmin con la UI Web
+- Un PC con el script malicioso

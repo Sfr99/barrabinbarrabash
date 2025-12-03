@@ -1,0 +1,19 @@
+Buenos días.
+
+Nuestra propuesta para el hackaton es una herramienta para administradores de
+sistemas de servidores de juegos autogestionados. Responde a la necesidad de
+proteger servidores de videojuegos con protocolos inseguros y vulnerables a ataques DDoS,
+floods de conexiones, escaneos de puertos, payloads sospechosos, etc. Las
+imágenes para los servidores de videojuegos suelen ser propietarias y dificultan
+la seguridad a nivel de aplicación. Se trataría de una capa intermedia entre
+cliente y servidor que implementaría medidas de seguridad a nivel de red. Nuestra
+propuesta sería desarrollar la herramienta y realizar una demo probándola de forma
+controlada en una LAN sobre un servidor de Project Zomboid, cuyo servidor dedicado
+es conocido por ser especialmente sensible a este tipo de ataques y mala
+configuración inicial.
+
+Muchas gracias por su atención.
+
+Un saludo,
+Barrabinbarrabash.
+
