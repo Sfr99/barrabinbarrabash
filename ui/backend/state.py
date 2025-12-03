@@ -1,65 +1,259 @@
+from pydantic import BaseModel
 from datetime import datetime, timedelta
-from typing import List, Dict, Any
+from typing import List, Tuple
 
-from models import Ban, Event, FirewallState
+from database import SessionLocal
+from models import BanDB, EventDB, StatsDB
 
+# ------------------------------
+# Nuestros modelos
+# ------------------------------
 
-# -----------------------
-# Estado simulado
-# -----------------------
-
-_attacks_today = 12
-
-_banned_ips: List[Ban] = [
-    Ban(ip="192.168.1.10", reason="SSH brute force", since=datetime.now() - timedelta(hours=2)),
-    Ban(ip="10.0.0.5", reason="Port scan", since=datetime.now() - timedelta(hours=5)),
-]
-
-_events: List[Event] = [
-    Event(timestamp=datetime.now() - timedelta(minutes=1), ip="203.0.113.1", action="blocked", description="HTTP flood"),
-    Event(timestamp=datetime.now() - timedelta(minutes=3), ip="198.51.100.2", action="allowed", description="Normal traffic"),
-    Event(timestamp=datetime.now() - timedelta(minutes=5), ip="192.0.2.50", action="blocked", description="SSH brute force"),
-]
+class Ban(BaseModel):
+    ip: str
+    reason: str
+    since: datetime
 
 
-def get_state() -> FirewallState:
-    return FirewallState(
-        attacks_today=_attacks_today,
-        banned_ips=_banned_ips,
-        events=sorted(_events, key=lambda e: e.timestamp, reverse=True),
+class Event(BaseModel):
+    timestamp: datetime
+    ip: str
+    action: str
+    description: str
+
+
+class FirewallState(BaseModel):
+    attacks_today: int
+    banned_ips: List[Ban]
+    events: List[Event]
+
+
+# ------------------------------
+# Mapear entre BBDD y clases
+# ------------------------------
+
+def _db_to_ban(b: BanDB) -> Ban:
+    return Ban(ip=b.ip, reason=b.reason, since=b.since)
+
+def _db_to_event(e: EventDB) -> Event:
+    return Event(
+        timestamp=e.timestamp,
+        ip=e.ip,
+        action=e.action,
+        description=e.description,
     )
 
-
-def reset_state():
-    global _attacks_today, _events, _banned_ips
-    _attacks_today = 0
-    _events = []
-    _banned_ips = []
-
-
-def unban_ip(ip: str):
-    global _banned_ips
-    _banned_ips = [b for b in _banned_ips if b.ip != ip]
+def _get_stats_row(session) -> StatsDB:
+    stats = session.query(StatsDB).filter(StatsDB.id == 1).first()
+    if not stats:
+        stats = StatsDB(id=1, attacks_today=0)
+        session.add(stats)
+        session.commit()
+        session.refresh(stats)
+    return stats
 
 
-def get_chart_data():
+# ------------------------------
+# Funciones públicas usadas por main.py
+# ------------------------------
+
+def get_state() -> FirewallState:
     """
-    Devuelve etiquetas y valores (eventos por minuto).
+    Devuelve todo el estado desde la BBDD:
+    - attacks_today (StatsDB)
+    - banned_ips (BanDB)
+    - events (EventDB)
     """
-    now = datetime.now()
-    labels = []
-    values = []
+    db = SessionLocal()
+    try:
+        stats = _get_stats_row(db)
+        bans_db = db.query(BanDB).all()
+        events_db = db.query(EventDB).order_by(EventDB.timestamp.desc()).all()
 
-    # últimos 10 minutos
-    for i in range(10, 0, -1):
-        minute = now - timedelta(minutes=i)
-        labels.append(minute.strftime("%H:%M"))
+        banned_ips = [_db_to_ban(b) for b in bans_db]
+        events = [_db_to_event(e) for e in events_db]
 
-        count = sum(
-            1
-            for e in _events
-            if e.timestamp.strftime("%H:%M") == minute.strftime("%H:%M")
+        return FirewallState(
+            attacks_today=stats.attacks_today,
+            banned_ips=banned_ips,
+            events=events,
         )
-        values.append(count)
+    finally:
+        db.close()
 
-    return labels, values
+
+def reset_state() -> None:
+    """
+    Resetea TODO el estado:
+    - attacks_today = 0
+    - borra todos los bans
+    - borra todos los eventos
+    """
+    db = SessionLocal()
+    try:
+        stats = _get_stats_row(db)
+        stats.attacks_today = 0
+
+        db.query(BanDB).delete()
+        db.query(EventDB).delete()
+
+        db.commit()
+    finally:
+        db.close()
+
+
+def unban_ip(ip: str) -> bool:
+    """
+    Elimina una IP de la tabla de bans.
+    Devuelve True si existía, False si no.
+    """
+    db = SessionLocal()
+    try:
+        row = db.query(BanDB).filter(BanDB.ip == ip).first()
+        if not row:
+            return False
+        db.delete(row)
+        db.commit()
+        return True
+    finally:
+        db.close()
+
+
+def get_chart_data() -> Tuple[List[str], List[int]]:
+    """
+    Construye (labels, values) para el gráfico de eventos por minuto
+    en los últimos 10 minutos, usando EventDB.
+    """
+    db = SessionLocal()
+    try:
+        now = datetime.now()
+        labels: List[str] = []
+        values: List[int] = []
+
+        # Traemos solo los eventos de los últimos 10 minutos (opcional pero eficiente)
+        since = now - timedelta(minutes=10)
+        events_db = (
+            db.query(EventDB)
+            .filter(EventDB.timestamp >= since)
+            .all()
+        )
+
+        for i in range(10, 0, -1):
+            minute = now - timedelta(minutes=i)
+            label = minute.strftime("%H:%M")
+            labels.append(label)
+
+            count = sum(
+                1
+                for e in events_db
+                if e.timestamp.strftime("%H:%M") == label
+            )
+            values.append(count)
+
+        return labels, values
+    finally:
+        db.close()
+
+# ------------------------------
+# Funciones extra para el futuro
+# (por si luego las necesitas)
+# ------------------------------
+
+def add_ban(ip: str, reason: str) -> Ban:
+    """Añade un ban a la BBDD. Si ya existe, lo devuelve sin duplicar."""
+    db = SessionLocal()
+    try:
+        existing = db.query(BanDB).filter(BanDB.ip == ip).first()
+        if existing:
+            return _db_to_ban(existing)
+
+        row = BanDB(ip=ip, reason=reason, since=datetime.now())
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+        return _db_to_ban(row)
+    finally:
+        db.close()
+
+
+def add_event(ip: str, action: str, description: str, is_attack: bool = False) -> Event:
+    """Añade un evento a la BBDD. Si is_attack=True, incrementa attacks_today."""
+    db = SessionLocal()
+    try:
+        row = EventDB(
+            timestamp=datetime.now(),
+            ip=ip,
+            action=action,
+            description=description,
+        )
+        db.add(row)
+
+        if is_attack:
+            stats = _get_stats_row(db)
+            stats.attacks_today += 1
+
+        db.commit()
+        db.refresh(row)
+        return _db_to_event(row)
+    finally:
+        db.close()
+
+def init_sample_data() -> None:
+    """
+    Rellena la base de datos con datos de ejemplo
+    si está vacía (sin bans y sin eventos).
+    """
+    db = SessionLocal()
+    try:
+        # ¿Ya hay datos? Entonces no hacemos nada
+        has_bans = db.query(BanDB).first()
+        has_events = db.query(EventDB).first()
+        if has_bans or has_events:
+            return
+
+        # Stats: attacks_today
+        stats = _get_stats_row(db)
+        stats.attacks_today = 12
+
+        now = datetime.now()
+
+        # Bans de ejemplo
+        bans = [
+            BanDB(
+                ip="192.168.1.10",
+                reason="SSH brute force",
+                since=now - timedelta(hours=2),
+            ),
+            BanDB(
+                ip="10.0.0.5",
+                reason="Port scan",
+                since=now - timedelta(hours=5),
+            ),
+        ]
+
+        # Eventos de ejemplo
+        events = [
+            EventDB(
+                timestamp=now - timedelta(minutes=1),
+                ip="203.0.113.1",
+                action="blocked",
+                description="HTTP flood",
+            ),
+            EventDB(
+                timestamp=now - timedelta(minutes=3),
+                ip="198.51.100.2",
+                action="allowed",
+                description="Normal traffic",
+            ),
+            EventDB(
+                timestamp=now - timedelta(minutes=5),
+                ip="192.0.2.50",
+                action="blocked",
+                description="SSH brute force",
+            ),
+        ]
+
+        db.add_all(bans + events)
+        db.commit()
+    finally:
+        db.close()
