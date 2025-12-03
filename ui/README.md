@@ -234,3 +234,239 @@ POST /reset
 Uvicorn imprime errores y actividad del backend.
 Flask registra peticiones desde la UI.
 
+
+Aquí tienes el **README del frontend**, profesional, claro y centrado exclusivamente en la UI. No menciona el proxy ni arquitectura global, solo lo necesario para **montar, entender y ejecutar la interfaz**.
+
+Cuando quieras, genero también el README general del proyecto.
+
+---
+
+# **BarrabinBarrabarrerash – Frontend UI**
+
+*Panel web de monitorización y gestión para la herramienta de seguridad en servidores de juegos*
+
+## 1. Descripción general
+
+Este frontend proporciona una **interfaz web ligera**, desarrollada con **Flask** y **Jinja2**, diseñada para visualizar en tiempo real:
+
+* Ataques detectados hoy.
+* IPs baneadas y su motivo.
+* Historial de eventos recientes.
+* Actividad por minuto en un gráfico dinámico (Chart.js).
+* Acciones básicas de administración (reset de estado y gestión de bans).
+
+La UI funciona como cliente del **backend FastAPI**, desde el cual obtiene todo el estado del firewall intermedio.
+
+El objetivo de esta interfaz es ofrecer una **visión clara y en vivo del estado del sistema**, permitiendo demostrar fácilmente el funcionamiento del MVP durante el hackathon.
+
+---
+
+## 2. Características principales
+
+### ✔ Actualización automática cada 5 segundos
+
+El dashboard refresca automáticamente:
+
+* Contador de ataques.
+* Lista de IPs baneadas.
+* Tabla de eventos.
+* Gráfico de actividad.
+
+### ✔ Dashboard centralizado
+
+`dashboard.html` es la página principal y muestra:
+
+* **Ataques hoy** (sumatorio diario).
+* **Tabla compacta de IPs baneadas**.
+* **Gráfico de eventos por minuto**.
+* **Últimos eventos**, ordenados por fecha.
+
+### ✔ Gestión básica de bans
+
+Desde el apartado *Bans* se pueden:
+
+* Ver todas las IPs actuales baneadas.
+* Desbanear una IP mediante POST al backend.
+
+### ✔ Integración con FastAPI
+
+La UI consume los siguientes endpoints:
+
+* `GET /state` — estado completo (ataques, bans, eventos).
+* `GET /chart` — datos para la gráfica.
+* `POST /reset` — reinicio del estado.
+* `POST /unban/<ip>` — retirar ban.
+
+La URL base se configura en:
+
+```python
+API_BASE_URL = "http://localhost:5000"
+```
+
+Modifícala en caso necesario.
+
+---
+
+## 3. Estructura del frontend
+
+Extraída del árbol del proyecto :
+
+```
+ui/frontend/
+├── app.py
+├── config.py
+├── static/
+│   └── css/
+│       └── styles.css
+└── templates/
+    ├── base.html
+    ├── dashboard.html
+    └── bans.html
+```
+
+### Archivos destacados
+
+| Archivo            | Descripción                                                                  |
+| ------------------ | ---------------------------------------------------------------------------- |
+| **app.py**         | Aplicación Flask. Define rutas, llama al backend y renderiza las plantillas. |
+| **dashboard.html** | Página principal con gráfico, estadísticas y tablas dinámicas.               |
+| **bans.html**      | Vista para gestionar IPs baneadas.                                           |
+| **base.html**      | Plantilla base con estilos y layout común.                                   |
+| **styles.css**     | Estilos para tarjetas, tablas, botones y responsive layout.                  |
+
+---
+
+## 4. Requisitos
+
+### Python
+
+* Python ≥ 3.10
+* Flask
+* Requests
+
+Instalables desde `requirements.txt` localizado en `ui/`:
+
+```
+pip install -r requirements.txt
+```
+
+(O puedes activar el entorno virtual ya incluido en el repositorio.)
+
+---
+
+## 5. Ejecución del frontend
+
+### 1) Acceder al directorio:
+
+```
+cd ui/frontend
+```
+
+### 2) Activar entorno virtual (opcional pero recomendado):
+
+Linux/macOS:
+
+```
+source ../venv/bin/activate
+```
+
+Windows (PowerShell):
+
+```
+../venv/Scripts/Activate.ps1
+```
+
+### 3) Iniciar el servidor Flask:
+
+```
+python app.py
+```
+
+Por defecto la UI queda disponible en:
+
+```
+http://localhost:8001
+```
+
+---
+
+## 6. Funcionamiento interno del dashboard
+
+El dashboard realiza una carga inicial de datos desde Flask y, después, ejecuta este bucle cada 5 segundos:
+
+```javascript
+setInterval(fetchState, 5000);
+```
+
+`fetchState()` refresca:
+
+* Contador de ataques
+* IPs baneadas
+* Eventos
+* Datos del gráfico
+
+Esto permite mostrar actividad en tiempo real sin necesidad de WebSockets.
+
+---
+
+## 7. Estilos y diseño
+
+El diseño se basa en:
+
+* **tarjetas (cards)** para agrupar secciones
+* **tablas responsivas** para eventos y bans
+* **contenedor con scroll interno** para IPs baneadas
+* estilo limpio, minimalista y orientado a demo técnica
+
+---
+
+## 8. Modificación de la URL del backend
+
+Para apuntar la UI a otra instancia del backend, edita:
+
+```python
+API_BASE_URL = "http://localhost:5000"
+```
+
+Ejemplos:
+
+* Docker:
+
+  ```
+  API_BASE_URL = "http://backend:5000"
+  ```
+* Remoto:
+
+  ```
+  API_BASE_URL = "http://192.168.1.50:5000"
+  ```
+
+---
+
+## 9. Limitaciones actuales
+
+* La UI depende 100% del backend FastAPI: sin él, la página no carga.
+* No existe autenticación.
+* Se asume que la API devuelve datos válidos y formateados.
+* La actualización periódica no usa WebSockets (puede producir picos de carga si se amplía).
+
+---
+
+## 10. Mejoras futuras recomendadas
+
+* Autenticación / roles.
+* Añadir gráficos adicionales (por tipo de ataque, IPs recurrentes…).
+* Historial persistente de días anteriores.
+* Integración directa con el proxy para formular reglas.
+* Modo oscuro y parametrización visual.
+
+---
+
+Si quieres, te genero también:
+
+* El **README para el backend**
+* El **README global del proyecto**
+* Un **diagrama en ASCII** del flujo UI → Backend
+* Una **sección de troubleshooting** para demos de hackathon
+
+Dime qué siguiente parte necesitas.

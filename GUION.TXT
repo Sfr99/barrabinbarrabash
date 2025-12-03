@@ -1,4 +1,56 @@
 
+Hemos hecho una herramienta para la administración y protección de servidores de juegos, 
+en concreto de Project Zomboid, que es un juego que hemos estado jugando recientemente. Responde a la necesidad de proteger ciertos 
+servidores que pueden ser vulnerables a ataques DDOS, payloads maliciosos..., pero por temas de tiempo para esta hackathon nos hemos
+centrado en ataques DDOS. Se trata de un programa que actua como capa intermedia entre el servidor y los clientes que actúa como una 
+reverse proxy y es en este programa donde empleamos la seguridad extra. 
+
+Hemos pensado en este juego en concreto ya que es un early access y puede que tenga ciertas vulnerables que pueden ser problemáticas, 
+sobretodo en servidores más grandes donde es más difícil moderar. Por ello hemos implementado una interfaz pensando en una mayor 
+facilidad de uso. 
+
+[[MOSTRAR INTERFAZ]]
+
+La interfaz permite ver el número de ataques al servidor hoy, una lista con las IP's automáticamente baneadas por el proxy, una gráfica
+mostrando los ataques de los últimos 10 minutos y los logs de los ataques. También permite resetear la base de datos y limpiar los logs, 
+así como unbanear IP's previamente capturadas. 
+
+
+// 
+
+Hemos propuesto un acercamiento para proteger servidores de videojuegos con
+protocolos inseguros enfocado a administradores de sistemas de servidores de
+juegos autogestionados. Las imágenes para los servidores de videojuegos suelen
+ser propietarias y dificultan la seguridad a nivel de aplicación. Por lo tanto,
+existen muchos servidores con imagenes servidores de videojuegos con protocolos
+inseguros y vulnerables a ataques DDoS, floods de conexiones, escaneos de
+puertos, payloads sospechosos, etc.
+
+Para solucionarlo hemos implementado una capa intermedia a nivel L4 que sirve
+de cortafuegos dedicado a servidores de videojuegos. Para comprobar la
+correcta ejecución de esta idea hemos implementado un MVP que protege a un
+servidor de Project Zomboid preexistente
+
+
+
+
+
+
+SETUP
+
+- Lanzamos el comando del túnel: ssh -v -J alberto@10.0.0.1 -L 8001:127.0.0.1:8001 admin@192.168.1.142
+- mostramos que se puede jugar en PC1 y en PC2 y las IPs a la vez mostramos los logs que se ven en el proxy
+- Salimos del juego y alberto hace bash run.sh
+- Javi intenta hacer una DDOS y mostramos los logs del proxy
+- Se muestra la interfaz, como salen los logs y la ip baneada, confirmamos que es la misma 
+- Jorge intenta hacer DDOS y mostramos los logs del proxy
+- Javi intenta entrar al juego y no puede entrar 
+- Unbaneamos la IP de javi y entra al juego
+
+
+
+
+
 PC Servidor
 
 curl ifconfig.me
