@@ -28,7 +28,7 @@
                     <th>Baneado desde</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="banned-table-body">
             {% for ban in banned_ips %}
                 <tr>
                     <td>{{ ban.ip }}</td>
@@ -65,7 +65,7 @@
                 <th>Descripción</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="events-table-body">
         {% for ev in events %}
             <tr>
                 <td>{{ ev.timestamp }}</td>
@@ -75,6 +75,8 @@
             </tr>
         {% endfor %}
         </tbody>
+
+
     </table>
     {% else %}
         <p>No hay eventos registrados.</p>
@@ -84,12 +86,12 @@
 <script>
 let chart = null;
 
+// -------------------- CHART --------------------
+
 function createChart(labels, values) {
     const ctx = document.getElementById("eventsChart");
 
-    if (chart) {
-        chart.destroy();
-    }
+    if (chart) chart.destroy();
 
     chart = new Chart(ctx, {
         type: "line",
@@ -115,24 +117,85 @@ function createChart(labels, values) {
     });
 }
 
-function fetchChartData() {
-    fetch("http://127.0.0.1:8001/chart")
-        .then(resp => resp.json())
-        .then(data => {
-            chart.data.labels = data.labels;
-            chart.data.datasets[0].data = data.values;
-            chart.update("none");
-        })
-        .catch(err => console.error("Error actualizando chart:", err));
+// -------------------- ACTUALIZACIÓN DEL DOM --------------------
+
+function updateAttacksToday(value) {
+    const el = document.querySelector(".big-number");
+    if (el) el.textContent = value;
 }
 
-// Inicial
+function updateBannedIPs(list) {
+    const tbody = document.querySelector("#banned-table-body");
+    if (!tbody) return;
+
+    if (!list || list.length === 0) {
+        tbody.innerHTML = "";
+        return;
+    }
+
+    tbody.innerHTML = list.map(b => `
+        <tr>
+            <td>${b.ip}</td>
+            <td>${b.reason}</td>
+            <td>${b.since}</td>
+        </tr>
+    `).join("");
+}
+
+function updateEvents(list) {
+    const tbody = document.querySelector("#events-table-body");
+    if (!tbody) return;
+
+    if (!list || list.length === 0) {
+        tbody.innerHTML = "";
+        return;
+    }
+
+    tbody.innerHTML = list.map(ev => `
+        <tr>
+            <td>${ev.timestamp}</td>
+            <td>${ev.ip}</td>
+            <td>${ev.action}</td>
+            <td>${ev.description}</td>
+        </tr>
+    `).join("");
+}
+
+// -------------------- FETCH COMPLETO DEL ESTADO --------------------
+
+function fetchState() {
+    fetch("http://127.0.0.1:8001/state")
+        .then(resp => resp.json())
+        .then(data => {
+
+            // actualizar contador ataques
+            updateAttacksToday(data.attacks_today);
+
+            // actualizar bans
+            updateBannedIPs(data.banned_ips);
+
+            // actualizar eventos
+            updateEvents(data.events);
+
+            // actualizar gráfico
+            chart.data.labels = data.chart.labels;
+            chart.data.datasets[0].data = data.chart.values;
+            chart.update("none");
+        })
+        .catch(err => console.error("Error actualizando estado:", err));
+}
+
+// -------------------- INIT --------------------
+
 createChart(
     JSON.parse('{{ chart_labels | tojson | safe }}'),
     JSON.parse('{{ chart_values | tojson | safe }}')
 );
 
-setInterval(fetchChartData, 5000);
+// Intervalo único para refrescar todo
+setInterval(fetchState, 5000);
+
 </script>
+
 
 {% endblock %}

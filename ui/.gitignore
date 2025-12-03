@@ -1,0 +1,23 @@
+# Entorno virtual
+.venv/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos temporales
+*.log
+*.tmp
+
+# Entornos y configuración locales
+.env
+*.sqlite3
+
+# Herramientas
+.coverage
+.pytest_cache/
+.mypy_cache/
+
+*.db

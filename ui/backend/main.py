@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from state import get_state, reset_state, unban_ip, get_chart_data, init_sample_data, FirewallState
+from state import get_state, reset_state, unban_ip, get_chart_data, init_sample_data, add_ban, add_event, FirewallState
 from database import engine
 from models import Base
 

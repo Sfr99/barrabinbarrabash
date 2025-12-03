@@ -21,11 +21,16 @@ class Event(BaseModel):
     action: str
     description: str
 
+class ChartData(BaseModel):
+    labels: List[str]
+    values: List[int]
 
 class FirewallState(BaseModel):
     attacks_today: int
     banned_ips: List[Ban]
     events: List[Event]
+    chart: ChartData   
+
 
 
 # ------------------------------
@@ -63,6 +68,7 @@ def get_state() -> FirewallState:
     - attacks_today (StatsDB)
     - banned_ips (BanDB)
     - events (EventDB)
+    - chart (events/min)
     """
     db = SessionLocal()
     try:
@@ -73,13 +79,18 @@ def get_state() -> FirewallState:
         banned_ips = [_db_to_ban(b) for b in bans_db]
         events = [_db_to_event(e) for e in events_db]
 
+        # Obtener datos del gráfico
+        labels, values = get_chart_data()
+
         return FirewallState(
             attacks_today=stats.attacks_today,
             banned_ips=banned_ips,
             events=events,
+            chart=ChartData(labels=labels, values=values)
         )
     finally:
         db.close()
+
 
 
 def reset_state() -> None:
