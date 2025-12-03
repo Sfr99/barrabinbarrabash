@@ -1,0 +1,13 @@
+
+PC Servidor
+
+curl ifconfig.me
+
+PC Cliente 1
+
+curl ifconfig.me
+
+PC Cliente 2
+
+curl ifconfig.me
+
