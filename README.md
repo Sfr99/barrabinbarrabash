@@ -19,6 +19,22 @@ protegiendo de ataques DDoS, baneando @IPs malignas. Además expone via HTTP un
 panel de administración del sistema que permite ver que ataques DDoS han
 sucedido, que @IPs han sido baneadas en consecuencia y permite desbanear.
 
+## Enfoque de la solución
+
+Un servidor autogestionado de videojuegos puede estar montado de diversas
+maneras. En nuestro caso nuestro servidor tenía abierto en un router los puertos
+necesarios para jugar a Project Zomboid y los port-forwardea al servidor NixOS
+que ejecuta el videojuego en un contenedor Docker. Tras implantar nuestra
+solución el router port-forwardea en su lugar los paquetes UDP/TCP al proxy,
+implementado en Python, que se ejecuta en segundo plano en el servidor NixOS,
+el cual realiza un saneamiento de las entradas, banea @IPs si es necesario,
+comunica la existencia de ataques a la aplicación web implementada en Flask y
+FastAPI si es necesario y forwardea los paquetes al Docker si pasan el control.
+
+## Cómo funciona
+
+## Cómo ejecutar o probar
+
 ## Ejecución interfaz web
 
 ### Recomendado
