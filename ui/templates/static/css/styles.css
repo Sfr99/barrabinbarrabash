@@ -124,3 +124,9 @@ table tbody tr:nth-child(odd) {
     padding: 0.25rem 0.5rem;
     font-size: 0.8rem;
 }
+
+.chart-container {
+    width: 500px;          /* controla el ancho */
+    height: 250px;         /* controla el alto */
+    margin: 0 auto;        /* centra el gráfico */
+}
