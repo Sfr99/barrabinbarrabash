@@ -13,7 +13,7 @@ app = FastAPI(title="Firewall Backend API")
 @app.get("/state")
 def api_state():
     """Devuelve todo el estado (ataques, bans, eventos)."""
-    return JSONResponse(get_state().model_dump())
+    return get_state()   # FastAPI lo serializa correctamente
 
 
 @app.post("/reset")
