@@ -25,7 +25,7 @@
                 <tr>
                     <th>IP</th>
                     <th>Motivo</th>
-                    <th>Desde</th>
+                    <th>Baneado desde</th>
                 </tr>
             </thead>
             <tbody>
@@ -47,22 +47,16 @@
 
 <section class="card">
     <h2>Eventos por minuto (últimos 10 min)</h2>
-
     <div class="chart-container">
         <canvas id="eventsChart"></canvas>
     </div>
 </section>
 
-
-
-
 <section class="card">
     <h2>Últimos eventos</h2>
+
     {% if events %}
-    <table><section class="card">
-    <h2>Eventos por minuto (últimos 10 min)</h2>
-    <canvas id="eventsChart" width="400" height="150"></canvas>
-</section>
+    <table>
         <thead>
             <tr>
                 <th>Hora</th>
@@ -88,57 +82,57 @@
 </section>
 
 <script>
-    const labels = JSON.parse('{{ chart_labels | tojson | safe }}');
-    const values = JSON.parse('{{ chart_values | tojson | safe }}');
+let chart = null;
 
+function createChart(labels, values) {
+    const ctx = document.getElementById("eventsChart");
 
+    if (chart) {
+        chart.destroy();
+    }
 
-    const ctx = document.getElementById('eventsChart');
-    if (ctx) {
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Eventos',
-                    data: values,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,          // permite redimensionar según contenedor
-                maintainAspectRatio: false, // usa el tamaño del contenedor
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        precision: 0
-                    }
+    chart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Eventos",
+                data: values,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    precision: 0
                 }
             }
-        });
-    }
-
-    new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: labels,
-        datasets: [{
-            label: 'Eventos',
-            data: values,
-            tension: 0.3
-        }]
-    },
-    options: {
-        responsive: false,             // evita que el gráfico se estire
-        maintainAspectRatio: false,    // respeta ancho/alto fijado
-        scales: {
-            y: {
-                beginAtZero: true,
-                precision: 0
-            }
         }
-    }
-});
+    });
+}
 
+function fetchChartData() {
+    fetch("http://127.0.0.1:8001/chart")
+        .then(resp => resp.json())
+        .then(data => {
+            chart.data.labels = data.labels;
+            chart.data.datasets[0].data = data.values;
+            chart.update("none");
+        })
+        .catch(err => console.error("Error actualizando chart:", err));
+}
+
+// Inicial
+createChart(
+    JSON.parse('{{ chart_labels | tojson | safe }}'),
+    JSON.parse('{{ chart_values | tojson | safe }}')
+);
+
+setInterval(fetchChartData, 5000);
 </script>
+
 {% endblock %}

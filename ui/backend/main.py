@@ -2,8 +2,21 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from state import get_state, reset_state, unban_ip, get_chart_data
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Firewall Backend API")
+origins = [
+    "http://127.0.0.1:5000",
+    "http://localhost:5000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,          
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # ------------------------------------------------------
