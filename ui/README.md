@@ -39,46 +39,44 @@ En modo demo, la información procede de un estado local en memoria. En producci
 
 ## 4. Integración con el backend
 
-El backend debe exponer endpoints REST que proporcionen:
+La UI consume datos a través de un backend REST. Para que las plantillas HTML funcionen correctamente, el backend debe devolver una serie de campos mínimos con nombres estables. No es necesario un formato exacto más allá de estos campos requeridos, pero sí deben existir con tipos compatibles.
 
-- Datos agregados para el dashboard  
-- Lista actual de IPs baneadas  
-- Acción de desbaneo de una IP  
-- Restablecimiento del estado del firewall  
-- Últimos eventos registrados  
-- Estadísticas por minuto para la gráfica  
+### 4.1. Datos requeridos para el dashboard
 
-La UI consume estas rutas únicamente para lectura y para las acciones de desbaneo y reseteo. La estructura de los datos devueltos debe incluir campos equivalentes a los utilizados en la plantilla (IP, motivo, fecha, acción, descripción, métricas temporales, etc.).
+El endpoint correspondiente debe proporcionar:
 
----
+* **attacks_today**: número entero.
+* **banned_ips**: lista de objetos con:
 
-## 5. Estructura del proyecto
+  * `ip`
+  * `reason`
+  * `since` (cadena formateada para mostrar en la tabla)
+* **events**: lista ordenable por fecha con:
 
-```
+  * `timestamp` (cadena mostrable en la UI)
+  * `ip`
+  * `action`
+  * `description`
+* **chart_labels**: lista de etiquetas temporales para el gráfico.
+* **chart_values**: lista de valores numéricos asociados a cada etiqueta.
 
-ui/
-│
-├─ app.py              # Lógica de la UI y llamadas previstas al backend
-├─ templates/          # Plantillas Jinja2
-├─ static/             # Recursos estáticos (CSS)
-├─ requirements.txt
-└─ README.md
+### 4.2. Gestión de IPs baneadas
 
-```
+La UI espera que el backend permita:
 
----
+* Obtener la lista de IPs baneadas.
+* Eliminar el ban de una IP mediante una operación POST o similar.
 
-## 6. Despliegue
+### 4.3. Reinicio del estado
 
-Para producción se recomienda:
+El backend debe permitir que la UI solicite:
 
-- Ejecutar Flask detrás de un servidor WSGI (Gunicorn, uWSGI, etc.).  
-- Publicar la aplicación detrás de un proxy inverso que sirva la ruta `/ui`.  
-- Mantener las dependencias aisladas en un entorno virtual o contenedor.
+* Reset del contador de ataques.
+* Limpieza de listas de bans y eventos.
 
----
+### 4.4. Requisitos de formato
 
-## 7. Notas adicionales
+* Todos los campos deben ser serializables por JSON.
+* Las fechas deben enviarse en formato legible por la UI (por ejemplo, “YYYY-MM-DD HH:MM:SS”).
+* El backend puede implementar cualquier lógica interna mientras respete los nombres de campos anteriores.
 
-- La seguridad (autenticación, roles, integridad de datos) debe implementarse en el backend si la UI se utiliza en entornos reales.  
-- Las rutas y estructura exacta de la API pueden ajustarse siempre que mantengan compatibilidad con los campos que la UI renderiza.
