@@ -23,7 +23,6 @@ app.add_middleware(
 
 # Crear tablas al arrancar
 Base.metadata.create_all(bind=engine)
-init_sample_data()
 
 # ------------------------------------------------------
 # RUTAS PÚBLICAS PARA EL FRONTEND FLASK
@@ -39,16 +38,34 @@ def api_reset():
     reset_state()
     return {"status": "ok", "msg": "state reset"}
 
+@app.post("/ban")
+def api_add_ban(ip: str, reason: str):
+    try:
+        add_ban(ip, reason)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"status": "ok", "msg": f"IP {ip} baneada"}
+
 @app.post("/unban/{ip}")
 def api_unban(ip: str):
     if not unban_ip(ip):
         raise HTTPException(status_code=404, detail="IP not found")
     return {"status": "ok", "msg": f"{ip} unbanned"}
 
+@app.post("/event")
+def api_add_event(ip: str, action: str, description: str, is_attack: bool = True):
+    try:
+        add_event(ip, action, description, is_attack)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"status": "ok", "msg": "Evento añadido"}
+
 @app.get("/chart")
 def api_chart():
     labels, values = get_chart_data()
     return {"labels": labels, "values": values}
+
+
 
 # ------------------------------------------------------
 # DEV MODE

@@ -14,7 +14,6 @@ class Ban(BaseModel):
     reason: str
     since: datetime
 
-
 class Event(BaseModel):
     timestamp: datetime
     ip: str
@@ -30,8 +29,6 @@ class FirewallState(BaseModel):
     banned_ips: List[Ban]
     events: List[Event]
     chart: ChartData   
-
-
 
 # ------------------------------
 # Mapear entre BBDD y clases
@@ -187,7 +184,7 @@ def add_ban(ip: str, reason: str) -> Ban:
         db.close()
 
 
-def add_event(ip: str, action: str, description: str, is_attack: bool = False) -> Event:
+def add_event(ip: str, action: str, description: str, is_attack: bool = True) -> Event:
     """Añade un evento a la BBDD. Si is_attack=True, incrementa attacks_today."""
     db = SessionLocal()
     try:
@@ -206,65 +203,5 @@ def add_event(ip: str, action: str, description: str, is_attack: bool = False) -
         db.commit()
         db.refresh(row)
         return _db_to_event(row)
-    finally:
-        db.close()
-
-def init_sample_data() -> None:
-    """
-    Rellena la base de datos con datos de ejemplo
-    si está vacía (sin bans y sin eventos).
-    """
-    db = SessionLocal()
-    try:
-        # ¿Ya hay datos? Entonces no hacemos nada
-        has_bans = db.query(BanDB).first()
-        has_events = db.query(EventDB).first()
-        if has_bans or has_events:
-            return
-
-        # Stats: attacks_today
-        stats = _get_stats_row(db)
-        stats.attacks_today = 12
-
-        now = datetime.now()
-
-        # Bans de ejemplo
-        bans = [
-            BanDB(
-                ip="192.168.1.10",
-                reason="SSH brute force",
-                since=now - timedelta(hours=2),
-            ),
-            BanDB(
-                ip="10.0.0.5",
-                reason="Port scan",
-                since=now - timedelta(hours=5),
-            ),
-        ]
-
-        # Eventos de ejemplo
-        events = [
-            EventDB(
-                timestamp=now - timedelta(minutes=1),
-                ip="203.0.113.1",
-                action="blocked",
-                description="HTTP flood",
-            ),
-            EventDB(
-                timestamp=now - timedelta(minutes=3),
-                ip="198.51.100.2",
-                action="allowed",
-                description="Normal traffic",
-            ),
-            EventDB(
-                timestamp=now - timedelta(minutes=5),
-                ip="192.0.2.50",
-                action="blocked",
-                description="SSH brute force",
-            ),
-        ]
-
-        db.add_all(bans + events)
-        db.commit()
     finally:
         db.close()
