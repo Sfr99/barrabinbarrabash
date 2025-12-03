@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card">
+    <h2>IPs baneadas</h2>
+
+    {% if banned_ips %}
+    <table>
+        <thead>
+            <tr>
+                <th>IP</th>
+                <th>Motivo</th>
+                <th>Desde</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for ban in banned_ips %}
+            <tr>
+                <td>{{ ban.ip }}</td>
+                <td>{{ ban.reason }}</td>
+                <td>{{ ban.since }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('unban', ip=ban.ip) }}">
+                        <button type="submit" class="btn btn-small">
+                            Unban
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No hay IPs baneadas.</p>
+    {% endif %}
+
+    <a href="{{ url_for('dashboard') }}" class="btn">Volver al dashboard</a>
+</section>
+{% endblock %}

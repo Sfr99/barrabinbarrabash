@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<section class="row">
+    <div class="card">
+        <h2>Ataques hoy</h2>
+        <p class="big-number">{{ attacks_today }}</p>
+
+        <form method="post" action="{{ url_for('reset') }}">
+            <button type="submit" class="btn btn-danger">
+                Reset contador y estado
+            </button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>IPs baneadas</h2>
+        {% if banned_ips %}
+        <table>
+            <thead>
+                <tr>
+                    <th>IP</th>
+                    <th>Motivo</th>
+                    <th>Desde</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for ban in banned_ips %}
+                <tr>
+                    <td>{{ ban.ip }}</td>
+                    <td>{{ ban.reason }}</td>
+                    <td>{{ ban.since }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>No hay IPs baneadas.</p>
+        {% endif %}
+        <a href="{{ url_for('bans') }}" class="btn">Ver y gestionar bans</a>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Eventos por minuto (últimos 10 min)</h2>
+
+    <div class="chart-container">
+        <canvas id="eventsChart"></canvas>
+    </div>
+</section>
+
+
+
+
+<section class="card">
+    <h2>Últimos eventos</h2>
+    {% if events %}
+    <table><section class="card">
+    <h2>Eventos por minuto (últimos 10 min)</h2>
+    <canvas id="eventsChart" width="400" height="150"></canvas>
+</section>
+        <thead>
+            <tr>
+                <th>Hora</th>
+                <th>IP</th>
+                <th>Acción</th>
+                <th>Descripción</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for ev in events %}
+            <tr>
+                <td>{{ ev.timestamp }}</td>
+                <td>{{ ev.ip }}</td>
+                <td>{{ ev.action }}</td>
+                <td>{{ ev.description }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No hay eventos registrados.</p>
+    {% endif %}
+</section>
+
+<script>
+    const labels = JSON.parse('{{ chart_labels | tojson | safe }}');
+    const values = JSON.parse('{{ chart_values | tojson | safe }}');
+
+
+
+    const ctx = document.getElementById('eventsChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Eventos',
+                    data: values,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        precision: 0
+                    }
+                }
+            }
+        });
+    }
+
+    new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Eventos',
+            data: values,
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: false,             // evita que el gráfico se estire
+        maintainAspectRatio: false,    // respeta ancho/alto fijado
+        scales: {
+            y: {
+                beginAtZero: true,
+                precision: 0
+            }
+        }
+    }
+});
+
+</script>
+{% endblock %}
