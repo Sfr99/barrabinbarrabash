@@ -2,16 +2,16 @@
 
 {% block content %}
 <section class="card">
-    <h2>IPs baneadas</h2>
+    <h2>Banned IPs</h2>
 
     {% if banned_ips %}
     <table>
         <thead>
             <tr>
                 <th>IP</th>
-                <th>Motivo</th>
-                <th>Desde</th>
-                <th>Acciones</th>
+                <th>Reason</th>
+                <th>Banned Since</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -32,9 +32,9 @@
         </tbody>
     </table>
     {% else %}
-        <p>No hay IPs baneadas.</p>
+        <p>No banned IPs.</p>
     {% endif %}
 
-    <a href="{{ url_for('dashboard') }}" class="btn">Volver al dashboard</a>
+    <a href="{{ url_for('dashboard') }}" class="btn">Return to ashboard</a>
 </section>
 {% endblock %}

@@ -5,7 +5,7 @@ URL_BBDD = "sqlite:///./firewall.db"
 
 engine = create_engine(
     URL_BBDD,
-    connect_args={"check_same_thread": False},  # necesario para SQLite si hay varios hilos
+    connect_args={"check_same_thread": False}, 
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

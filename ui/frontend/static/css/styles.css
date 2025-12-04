@@ -126,9 +126,9 @@ table tbody tr:nth-child(odd) {
 }
 
 .chart-container {
-    width: 500px;          /* controla el ancho */
-    height: 250px;         /* controla el alto */
-    margin: 0 auto;        /* centra el gráfico */
+    width: 500px;          
+    height: 250px;        
+    margin: 0 auto;       
 }
 
 
@@ -141,7 +141,7 @@ table tbody tr:nth-child(odd) {
 
 .banned-table-wrapper table {
     border-collapse: collapse;
-    border-top: none;            /* quita borde superior */
+    border-top: none;            
     margin-top: 0;
 }
 
@@ -156,5 +156,5 @@ table tbody tr:nth-child(odd) {
     top: 0;
     background: #111827;
     z-index: 3;
-    border-top: none !important; /* evita borde fantasma */
+    border-top: none !important; 
 }

@@ -12,13 +12,13 @@
 
         <form method="post" action="{{ url_for('reset') }}">
             <button type="submit" class="btn btn-danger">
-                Reset contador y estado
+                Reset Counter and State
             </button>
         </form>
     </div>
 
     <div class="card">
-        <h2>IPs baneadas</h2>
+        <h2>Banned IPs</h2>
 
         {% if banned_ips %}
         <div class="banned-table-wrapper">
@@ -26,8 +26,8 @@
                 <thead>
                     <tr>
                         <th>IP</th>
-                        <th>Motivo</th>
-                        <th>Baneado desde</th>
+                        <th>Reason</th>
+                        <th>Banned Since</th>
                     </tr>
                 </thead>
                 <tbody id="banned-table-body">
@@ -42,32 +42,32 @@
             </table>
         </div>
         {% else %}
-            <p>No hay IPs baneadas.</p>
+            <p>No banned IPs.</p>
         {% endif %}
 
-        <a href="{{ url_for('bans') }}" class="btn">Ver y gestionar bans</a>
+        <a href="{{ url_for('bans') }}" class="btn">View and Manage Bans</a>
     </div>
 
 </section>
 
 <section class="card">
-    <h2>Eventos por minuto (últimos 10 min)</h2>
+    <h2>Events Per Minute</h2>
     <div class="chart-container">
         <canvas id="eventsChart"></canvas>
     </div>
 </section>
 
 <section class="card">
-    <h2>Últimos eventos</h2>
+    <h2>Last Events</h2>
 
     {% if events %}
     <table>
         <thead>
             <tr>
-                <th>Hora</th>
+                <th>Hour</th>
                 <th>IP</th>
-                <th>Acción</th>
-                <th>Descripción</th>
+                <th>Action</th>
+                <th>Description</th>
             </tr>
         </thead>
         <tbody id="events-table-body">
@@ -84,7 +84,7 @@
 
     </table>
     {% else %}
-        <p>No hay eventos registrados.</p>
+        <p>No registred events.</p>
     {% endif %}
 </section>
 
@@ -103,7 +103,7 @@ function createChart(labels, values) {
         data: {
             labels: labels,
             datasets: [{
-                label: "Eventos",
+                label: "Events",
                 data: values,
                 tension: 0.3
             }]
@@ -122,8 +122,7 @@ function createChart(labels, values) {
     });
 }
 
-// -------------------- ACTUALIZACIÓN DEL DOM --------------------
-
+// -------------------- DOM UPDATE LOGIC --------------------
 function updateAttacksToday(value) {
     const el = document.querySelector(".big-number");
     if (el) el.textContent = value;
@@ -166,28 +165,28 @@ function updateEvents(list) {
     `).join("");
 }
 
-// -------------------- FETCH COMPLETO DEL ESTADO --------------------
+// -------------------- FULL STATE REFRESH --------------------
 
 function fetchState() {
     fetch("http://127.0.0.1:5000/state")
         .then(resp => resp.json())
         .then(data => {
 
-            // actualizar contador ataques
+            // update atack counter
             updateAttacksToday(data.attacks_today);
 
-            // actualizar bans
+            // update banned IPs
             updateBannedIPs(data.banned_ips);
 
-            // actualizar eventos
+            // update events table
             updateEvents(data.events);
 
-            // actualizar gráfico
+            // update chart data
             chart.data.labels = data.chart.labels;
             chart.data.datasets[0].data = data.chart.values;
             chart.update("none");
         })
-        .catch(err => console.error("Error actualizando estado:", err));
+        .catch(err => console.error("Error updating state:", err));
 }
 
 // -------------------- INIT --------------------
@@ -197,7 +196,6 @@ createChart(
     JSON.parse('{{ chart_values | tojson | safe }}')
 );
 
-// Intervalo único para refrescar todo
 setInterval(fetchState, 5000);
 
 </script>

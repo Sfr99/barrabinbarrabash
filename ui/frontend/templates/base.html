@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="es">
+
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <title>Firewall UI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- CSS propio -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 
     {% block extra_head %}{% endblock %}
@@ -13,7 +13,7 @@
 <body>
     <header class="topbar">
         <div class="container">
-            <h1>Firewall UI</h1>
+            <h1>Firewall Admin Panel</h1>
             <nav>
                 <a href="{{ url_for('dashboard') }}">Dashboard</a>
                 <a href="{{ url_for('bans') }}">Bans</a>

@@ -21,16 +21,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Crear tablas al arrancar
 Base.metadata.create_all(bind=engine)
 
-# ------------------------------------------------------
-# RUTAS PÚBLICAS PARA EL FRONTEND FLASK
-# ------------------------------------------------------
-
+# public routes for the Flask API
 @app.get("/state", response_model=FirewallState)
 def api_state():
-    """Devuelve todo el estado (ataques, bans, eventos)."""
+    """Returns the complete firewall state (attacks, bans, events)."""
     return get_state()
 
 @app.post("/reset")
@@ -44,7 +40,7 @@ def api_add_ban(ip: str, reason: str):
         add_ban(ip, reason)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    return {"status": "ok", "msg": f"IP {ip} baneada"}
+    return {"status": "ok", "msg": f"IP {ip} banned"}
 
 @app.post("/unban/{ip}")
 def api_unban(ip: str):
@@ -58,7 +54,7 @@ def api_add_event(ip: str, action: str, description: str, is_attack: bool = True
         add_event(ip, action, description, is_attack)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    return {"status": "ok", "msg": "Evento añadido"}
+    return {"status": "ok", "msg": "Event added"}
 
 @app.get("/chart")
 def api_chart():
@@ -67,9 +63,7 @@ def api_chart():
 
 
 
-# ------------------------------------------------------
-# DEV MODE
-# ------------------------------------------------------
+# Run the app with: uvicorn main:app --reload --port 5000 &
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=True)

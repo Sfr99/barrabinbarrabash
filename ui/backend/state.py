@@ -5,27 +5,27 @@ from typing import List, Tuple
 from database import SessionLocal
 from models import BanDB, EventDB, StatsDB
 
-# ------------------------------
-# Nuestros modelos
-# ------------------------------
+# const
+MINUTES_FOR_CHART = 10
 
-class Ban(BaseModel):
+
+class Ban(BaseModel):   # represent a banned IP record with reason and since
     ip: str
     reason: str
     since: datetime
 
 
-class Event(BaseModel):
+class Event(BaseModel):  # represent an event record with details
     timestamp: datetime
     ip: str
     action: str
     description: str
 
-class ChartData(BaseModel):
+class ChartData(BaseModel): # represent chart data with labels and values
     labels: List[str]
     values: List[int]
 
-class FirewallState(BaseModel):
+class FirewallState(BaseModel):  # represent the overall firewall state
     attacks_today: int
     banned_ips: List[Ban]
     events: List[Event]
@@ -33,9 +33,7 @@ class FirewallState(BaseModel):
 
 
 
-# ------------------------------
-# Mapear entre BBDD y clases
-# ------------------------------
+# map between DB models and Pydantic models
 
 def _db_to_ban(b: BanDB) -> Ban:
     return Ban(ip=b.ip, reason=b.reason, since=b.since)
@@ -58,17 +56,15 @@ def _get_stats_row(session) -> StatsDB:
     return stats
 
 
-# ------------------------------
-# Funciones públicas usadas por main.py
-# ------------------------------
+# Main functions to get and modify state
 
 def get_state() -> FirewallState:
     """
-    Devuelve todo el estado desde la BBDD:
+    Returns the complete firewall state from the database:
     - attacks_today (StatsDB)
     - banned_ips (BanDB)
     - events (EventDB)
-    - chart (events/min)
+    - chart (events per minute)
     """
     db = SessionLocal()
     try:
@@ -95,10 +91,7 @@ def get_state() -> FirewallState:
 
 def reset_state() -> None:
     """
-    Resetea TODO el estado:
-    - attacks_today = 0
-    - borra todos los bans
-    - borra todos los eventos
+    Resets all firewall state in the database.
     """
     db = SessionLocal()
     try:
@@ -115,8 +108,8 @@ def reset_state() -> None:
 
 def unban_ip(ip: str) -> bool:
     """
-    Elimina una IP de la tabla de bans.
-    Devuelve True si existía, False si no.
+    Removes an IP ban from the database, 
+    returning True if it existed, False otherwise.
     """
     db = SessionLocal()
     try:
@@ -132,8 +125,8 @@ def unban_ip(ip: str) -> bool:
 
 def get_chart_data() -> Tuple[List[str], List[int]]:
     """
-    Construye (labels, values) para el gráfico de eventos por minuto
-    en los últimos 10 minutos, usando EventDB.
+    Builds (labels, values) for the events-per-minute chart
+    over the last MINUTES_FOR_CHART minutes, using EventDB.
     """
     db = SessionLocal()
     try:
@@ -141,15 +134,15 @@ def get_chart_data() -> Tuple[List[str], List[int]]:
         labels: List[str] = []
         values: List[int] = []
 
-        # Traemos solo los eventos de los últimos 10 minutos (opcional pero eficiente)
-        since = now - timedelta(minutes=10)
+
+        since = now - timedelta(minutes=MINUTES_FOR_CHART)
         events_db = (
             db.query(EventDB)
             .filter(EventDB.timestamp >= since)
             .all()
         )
 
-        for i in range(10, 0, -1):
+        for i in range(MINUTES_FOR_CHART, 0, -1):
             minute = now - timedelta(minutes=i)
             label = minute.strftime("%H:%M")
             labels.append(label)
@@ -165,13 +158,12 @@ def get_chart_data() -> Tuple[List[str], List[int]]:
     finally:
         db.close()
 
-# ------------------------------
-# Funciones extra para el futuro
-# (por si luego las necesitas)
-# ------------------------------
 
 def add_ban(ip: str, reason: str) -> Ban:
-    """Añade un ban a la BBDD. Si ya existe, lo devuelve sin duplicar."""
+    """
+    Adds a new ban to the database. If the IP is already banned,
+    returns the existing ban. Otherwise returns the newly created Ban.
+    """
     db = SessionLocal()
     try:
         existing = db.query(BanDB).filter(BanDB.ip == ip).first()
@@ -188,7 +180,10 @@ def add_ban(ip: str, reason: str) -> Ban:
 
 
 def add_event(ip: str, action: str, description: str, is_attack: bool = False) -> Event:
-    """Añade un evento a la BBDD. Si is_attack=True, incrementa attacks_today."""
+    """
+    Adds an event to the database. If is_attack is True,
+    increments attacks_today in StatsDB. Returns the created Event.
+    """
     db = SessionLocal()
     try:
         row = EventDB(
@@ -209,14 +204,18 @@ def add_event(ip: str, action: str, description: str, is_attack: bool = False) -
     finally:
         db.close()
 
+
+
+# Development helper: initialize sample data
 def init_sample_data() -> None:
     """
-    Rellena la base de datos con datos de ejemplo
-    si está vacía (sin bans y sin eventos).
+    Fills the database with sample bans and events for testing.
+    Does nothing if there are already bans or events.
+    Function only for development purposes.
     """
     db = SessionLocal()
     try:
-        # ¿Ya hay datos? Entonces no hacemos nada
+        # Check if there are already bans or events
         has_bans = db.query(BanDB).first()
         has_events = db.query(EventDB).first()
         if has_bans or has_events:
@@ -228,7 +227,7 @@ def init_sample_data() -> None:
 
         now = datetime.now()
 
-        # Bans de ejemplo
+        # Sample bans
         bans = [
             BanDB(
                 ip="192.168.1.10",
@@ -242,7 +241,7 @@ def init_sample_data() -> None:
             ),
         ]
 
-        # Eventos de ejemplo
+        # example events
         events = [
             EventDB(
                 timestamp=now - timedelta(minutes=1),
